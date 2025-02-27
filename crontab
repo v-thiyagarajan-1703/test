@@ -1,4 +1,2 @@
-* * * * * php /var/www/html/cron.php >> /var/www/html/cron_output.txt 2>&1
-*/10 * * * * php /var/www/html/cron.php >> /var/www/html/cron_output.txt 2>&1
-*/5 * * * * php /var/www/html/cron.php >> /var/www/html/cron_output.txt 2>&1
-1 * * * * php /var/www/html/index.php >> /var/www/html/cron_output.txt 2>&1
+* * * * * www-data /usr/local/bin/php /var/www/html/cron.php >> /var/www/html/cron_output.txt 2>&1
+* * * * * www-data /usr/local/bin/php /var/www/html/index.php >> /var/www/html/cron_output.txt 2>&1
