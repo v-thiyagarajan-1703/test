@@ -1,47 +1,31 @@
-# Use the official PHP 8.3 image as the base image
-FROM php:8.3-apache
+# Use the official PHP image with Apache
+FROM php:apache
 
-# Set the working directory inside the container
-WORKDIR /var/www/html
-
-# Install system dependencies, PHP extensions, and cron
+# Install necessary packages including cron
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
     unzip \
+    curl \
     cron \
-    && docker-php-ext-install mysqli pdo_mysql mbstring exif pcntl bcmath gd \
-    # Clean up unnecessary files to reduce image size
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache modules and configure the server
-RUN a2enmod rewrite \
-    && a2enmod headers \
-    && a2enmod ssl \
-    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# Set working directory
+WORKDIR /var/www/html
 
-# Copy the application files
-COPY . .
+# Download and extract the GitHub repo
+RUN curl -L https://github.com/v-thiyagarajan-1703/test/archive/refs/heads/main.zip -o repo.zip \
+    && unzip repo.zip \
+    && mv test-main/* . \
+    && rm -rf test-main repo.zip
 
-# Set proper permissions for files
+# Set file permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# Copy the cron job file
-COPY crontab /etc/cron.d/my-cron
+# Add cron jobs directly to crontab
+RUN echo "* * * * * /usr/local/bin/php /var/www/html/cron.php >> /var/www/html/cron_output.txt 2>&1" | crontab -
 
-# Set permissions and register the cron job
-RUN chmod 0644 /etc/cron.d/my-cron && crontab /etc/cron.d/my-cron
+# Create the log file
+RUN touch /var/www/html/cron_output.txt && chown www-data:www-data /var/www/html/cron_output.txt
 
-# Ensure cron log file exists
-RUN touch /var/log/cron.log
+# Start cron correctly inside Docker
+CMD ["bash", "-c", "cron && apache2-foreground"]
 
-# Expose port 80
-EXPOSE 80
-
-# Start Cron and Apache together
-CMD cron -f & apache2-foreground
