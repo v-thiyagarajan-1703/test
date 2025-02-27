@@ -22,4 +22,7 @@ if ($file) {
 
     // Close the file
     fclose($file);
+}
+
 ?>
+
